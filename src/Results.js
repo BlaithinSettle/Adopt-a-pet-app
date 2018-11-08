@@ -1,7 +1,8 @@
 import React from 'react';
-
 import pf from 'petfinder-client';
+import { Consumer } from './SearchContext';
 import  Pet from './Pet';
+import SearchBox from './SearchBox';
 
 const petfinder= pf({
     key: process.env.API_KEY,
@@ -20,7 +21,13 @@ constructor (props){
 }
 
   componentDidMount(){
-      petfinder.pet.find({output: "full", location: "New York, NY"})
+        this.search();
+  }
+  //search when submit button is clicked 
+  search =() => {
+      petfinder.pet.find({output: "full", location: this.props.searchParams.location, 
+      animal: this.props.searchParams.animal, 
+      breed: this.props.searchParams.breed})
     //when it is back from the API
     .then(data =>{
      let pets;
@@ -47,6 +54,7 @@ constructor (props){
   return (
       
      <div className="search">
+            <SearchBox search={this.search}/>
          {this.state.pets.map(pet=>{
              let breed;
              if(Array.isArray(pet.breeds.breed)){
@@ -74,4 +82,14 @@ constructor (props){
 }
 
 
-export default Results;
+export default function ResultsWithContext(props){
+    return (
+        <Consumer>
+            {context => <Results {...props} searchParams={context}/>}
+        </Consumer>
+    )
+}
+
+//to make context avaiable for life cycle methods 
+//this will allow the user to search for animals/location/breed
+//to search multiple times add another method = search()
